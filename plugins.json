@@ -1,0 +1,18 @@
+{
+  "plugin_name": "WelcomeUser",
+  "plugin_scope": "welcome",
+  "plugin_exec": "welcome.js",
+  "command_map": {},
+  "author": "Kaysil",
+  "version": "1.5",
+  "node_depends": {
+    "wait-for-stuff": "*",
+    "unidecode": "*",
+    "translate": "*"
+  },
+  	"dependents": [],
+	"chatHook": "chathook",
+	"chatHookType": "everything",
+	"chatHookPlatform": 1,
+  "complied_for": "0.3.0"
+}
