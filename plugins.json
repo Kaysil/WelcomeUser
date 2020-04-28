@@ -1,14 +1,12 @@
 {
-  "plugin_name": "WelcomeUser",
-  "plugin_scope": "welcome",
-  "plugin_exec": "welcome.js",
+  "plugin_name": "JoinLeaveMessage",
+  "plugin_scope": "joinleave",
+  "plugin_exec": "main.js",
   "command_map": {},
   "author": "Kaysil",
-  "version": "1.5",
+  "version": "3.8",
   "node_depends": {
-    "wait-for-stuff": "*",
-    "unidecode": "*",
-    "translate": "*"
+    "wait-for-stuff": "*"
   },
   	"dependents": [],
 	"chatHook": "chathook",
