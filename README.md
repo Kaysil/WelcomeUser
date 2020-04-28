@@ -1,5 +1,5 @@
-# WelcomeUser PLUGIN #
-### WelcomeUser plugin for C3CBot
+# JoinLeaveMessag PLUGIN #
+### JoinLeaveMessag plugin for C3CBot
 ### Author: Kaysil (me) ##
 
 ### Usage/Using:
