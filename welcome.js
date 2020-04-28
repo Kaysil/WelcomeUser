@@ -1,34 +1,101 @@
 var wait = global.nodemodule['wait-for-stuff'];
-var chathook = function(type, data){
+var fs = global.nodemodule["fs"];
+var path = global.nodemodule["path"];
+var wait = global.nodemodule["wait-for-stuff"];
+
+function ensureExists(path, mask) {
+  if (typeof mask != 'number') {
+    mask = 0o777;
+  }
+  try {
+    fs.mkdirSync(path, {
+      mode: mask,
+      recursive: true
+    });
+    return undefined;
+  } catch (ex) {
+    return { err: ex };
+  }
+}
+
+var rootpath = path.resolve(__dirname, "..", "WelcomeUser");
+ensureExists(rootpath);
+
+var defaultConfig = {
+	"messages": {
+          "whenUserJoin": "Chào mừng {username}",
+          "whenUserLeave": "Tạm biệt {username}",
+          "whenUserJoinDM": "Chào mừng cậu đã vào nhóm '{groupname}'.\n\nCậu là người dùng thứ {groupmember} của nhóm.",
+          "whenUserLeaveDM": "Tạm biệt cậu đã ra khỏi nhóm '{groupname}'.\n\nNhóm còn lại {groupmember} người dùng.",
+	 },
+     "help": {
+          "1": "{username}, {groupname}, {groupmember}"
+     }
+};
+
+if (!fs.existsSync(path.join(rootpath, "config.json"))) {
+	fs.writeFileSync(path.join(rootpath, "config.json"), JSON.stringify(defaultConfig, null, 5));
+	var config = defaultConfig;
+} else {
+	var config = JSON.parse(fs.readFileSync(path.join(rootpath, "config.json"), {
+		encoding: "utf8"
+	}));
+}
+
+var chathook = function(type, data) {
 	var fb = data.facebookapi;
     var msg = data.msgdata;
+	var threadID = msg.threadID;
+	var senderID = msg.senderID;
 	
 if (msg.type === 'event') {
 	switch (msg.logMessageType) {
 		case 'log:subscribe':
-		msg.logMessageData.addedParticipants.forEach(id => {
+			msg.logMessageData.addedParticipants.forEach(id => {
+				
 			var [err, threadInfo] = wait.for.function(data.facebookapi.getThreadInfo, data.msgdata.threadID);
 			var userID = id.userFbId;
-		fb.getUserInfo([userID], (err, userInfo) => {
-			data.log(threadInfo.participantIDs);
-			data.log(Object.keys(threadInfo.participantIDs).length);
-			if (err) return {handler: `internal`, data: `Lỗi không xác định`};
-			if (userID !== fb.getCurrentUserID()) { 
-			    data.return({handler: `internal-raw`, data: {body: `Chào mừng @${userInfo[userID].name}`, mentions: [{tag: `@${userInfo[userID].name}`, id: userID}]}});
-			    fb.sendMessage(`[Welcome] Chào mừng bạn đã đến với nhóm chat ${threadInfo.name}, bạn là người dùng thứ ${Object.keys(threadInfo.participantIDs).length} của nhóm`, userID);
+			
+			fb.getUserInfo([userID], (err, userInfo) => {
+				
+			var userMentions = `@${userInfo[userID].name}`;
+			var join = config.messages.whenUserJoin.replace("{username}", userMentions);
+			var joinDM = config.messages.whenUserJoinDM.replace("{groupname}", threadInfo.name).replace("{groupmember}", Object.keys(threadInfo.participantIDs).length);
+			
+			if (userID !== fb.getCurrentUserID()) {
+
+				fb.sendMessage({
+					body: `${data.prefix} ${join}`,
+					mentions: [{
+						tag: userMentions,
+						id: userID
+					}],
+				}, msg.threadID);
+			    fb.sendMessage(`${data.prefix} ${joinDM}`, userID);
 			}
-			if (userID === fb.getCurrentUserID()) return fb.changeNickname(`[ ${global.config.commandPrefix} ] ${global.config.botname}`, msg.threadID, userID);
-			})
+		  })
 		})
 		break;
 		case 'log:unsubscribe':
-		    var [err, threadInfo] = wait.for.function(data.facebookapi.getThreadInfo, data.msgdata.threadID);
 			var userID = msg.logMessageData.leftParticipantFbId;
-		fb.getUserInfo([userID], (err, userInfo) => {
+			var [err, threadInfo] = wait.for.function(data.facebookapi.getThreadInfo, data.msgdata.threadID);
+			
+			fb.getUserInfo([userID], (err, userInfo) => {
+
+			var userMentions = `@${userInfo[userID].name}`;
+			var leave = config.messages.whenUserLeave.replace("{username}", userMentions);
+			var leaveDM = config.messages.whenUserLeaveDM.replace("{groupname}", threadInfo.name).replace("{groupmember}", Object.keys(threadInfo.participantIDs).length);
+			
 			if (userID !== fb.getCurrentUserID()) {
-			    data.return({handler: `internal-raw`, data: {body: `\r\nTạm biệt @${userInfo[userID].name}.`, mentions: [{tag: `@${userInfo[userID].name}`, id: userID}]}});
-			    fb.sendMessage(`[Goodbye] Tạm biệt bạn đã rời khỏi nhóm ${threadInfo.name}, nhóm còn lại ${Object.keys(threadInfo.participantIDs).length} người dùng`, userID);
-			}
+				fb.sendMessage({
+					body: `${data.prefix} ${leave}`,
+					mentions: [{
+						tag: userMentions,
+						id: userID
+					}],
+				}, msg.threadID);
+			    fb.sendMessage(`${data.prefix} ${leaveDM}`, userID);
+		  }
 		})
 		break;
  }
