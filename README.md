@@ -1,5 +1,5 @@
-# JoinLeaveMessaga PLUGIN #
-### JoinLeaveMessaga plugin for C3CBot
+# JoinLeaveMessage PLUGIN #
+### JoinLeaveMessage plugin for C3CBot
 ### Author: Kaysil (me) ##
 
 ### Usage/Using:
