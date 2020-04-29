@@ -5,6 +5,10 @@
 
 ### Usage/Using:
 - Put it to ./plugins folder then run your bot
+
+#### Config:
+- 
+
 #### Command:
 - Main command: none
 
