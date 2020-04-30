@@ -1,6 +1,6 @@
 # JoinLeaveMessage PLUGIN #
 [![HitCount](http://hits.dwyl.com/Kaysil/JoinLeaveMessage.svg)](http://hits.dwyl.com/Kaysil/JoinLeaveMessage)
-<img alt="GitHub All Releases" src="https://img.shields.io/github/downloads/Kaysil/JoinLeaveMessage/total">
+[![GitHubReleases](https://img.shields.io/github/downloads/Kaysil/JoinLeaveMessage/total)
 ### JoinLeaveMessage plugin for C3CBot
 ### Author: Kaysil (me) ##
 
