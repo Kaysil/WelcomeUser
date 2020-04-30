@@ -4,7 +4,7 @@
   "plugin_exec": "main.js",
   "command_map": {},
   "author": "Kaysil",
-  "version": "3.8",
+  "version": "1.0",
   "node_depends": {
     "wait-for-stuff": "*"
   },
