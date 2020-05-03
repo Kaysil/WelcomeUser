@@ -1,7 +1,6 @@
 var wait = global.nodemodule['wait-for-stuff'];
 var fs = global.nodemodule["fs"];
 var path = global.nodemodule["path"];
-var wait = global.nodemodule["wait-for-stuff"];
 
 function ensureExists(path, mask) {
   if (typeof mask != 'number') {
