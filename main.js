@@ -1,6 +1,7 @@
 var wait = global.nodemodule['wait-for-stuff'];
 var fs = global.nodemodule["fs"];
 var path = global.nodemodule["path"];
+var wait = global.nodemodule["wait-for-stuff"];
 
 function ensureExists(path, mask) {
   if (typeof mask != 'number') {
@@ -17,19 +18,20 @@ function ensureExists(path, mask) {
   }
 }
 
-var rootpath = path.resolve(__dirname, "..", "JoinLeaveMessage");
+var rootpath = path.resolve(__dirname, "..", "CustomAlerts-files");
 ensureExists(rootpath);
 
 var defaultConfig = {
 	"messages": {
           "whenUserJoin": "Chào mừng {username}",
           "whenUserLeave": "Tạm biệt {username}",
-          "whenUserJoinDM": "Chào mừng cậu đã vào nhóm '{groupname}'.\n\nCậu là người dùng thứ {groupmember} của nhóm.",
-          "whenUserLeaveDM": "Tạm biệt cậu đã ra khỏi nhóm '{groupname}'.\n\nNhóm còn lại {groupmember} người dùng.",
+          "whenUserJoinDM": "Chào mừng cậu đã vào nhóm '{groupname}'.\n\nCậu là người dùng thứ {membercount} của nhóm.",
+          "whenUserLeaveDM": "Tạm biệt cậu đã ra khỏi nhóm '{groupname}'.\n\nNhóm còn lại {membercount} người dùng.",
 	 },
-     "help": {
-          "1": "{username}, {groupname}, {groupmember}"
-     }
+     "help": [
+		 "Leave blank the feature you want to turned off",
+		 "{username}, {groupname}, {membercount}"
+	 ]
 };
 
 if (!fs.existsSync(path.join(rootpath, "config.json"))) {
@@ -58,8 +60,8 @@ if (msg.type === 'event') {
 			fb.getUserInfo([userID], (err, userInfo) => {
 				
 			var userMentions = `@${userInfo[userID].name}`;
-			var join = config.messages.whenUserJoin.replace("{username}", userMentions);
-			var joinDM = config.messages.whenUserJoinDM.replace("{groupname}", threadInfo.name).replace("{groupmember}", Object.keys(threadInfo.participantIDs).length);
+			var join = config.messages.whenUserJoin.replace("{username}", userMentions).replace("{groupname}", threadInfo.name).replace("{groupmember}", Object.keys(threadInfo.participantIDs).length);
+			var joinDM = config.messages.whenUserJoinDM.replace("{username}", userMentions).replace("{groupname}", threadInfo.name).replace("{groupmember}", Object.keys(threadInfo.participantIDs).length);
 			
 			if (userID !== fb.getCurrentUserID()) {
 
@@ -70,7 +72,13 @@ if (msg.type === 'event') {
 						id: userID
 					}],
 				}, msg.threadID);
-			    fb.sendMessage(`${data.prefix} ${joinDM}`, userID);
+			    fb.sendMessage({
+					body: `${data.prefix} ${joinDM}`,
+					mentions: [{
+						tag: userMentions,
+						id: userID
+					}],
+				}, userID);
 			}
 		  })
 		})
@@ -82,8 +90,8 @@ if (msg.type === 'event') {
 			fb.getUserInfo([userID], (err, userInfo) => {
 
 			var userMentions = `@${userInfo[userID].name}`;
-			var leave = config.messages.whenUserLeave.replace("{username}", userMentions);
-			var leaveDM = config.messages.whenUserLeaveDM.replace("{groupname}", threadInfo.name).replace("{groupmember}", Object.keys(threadInfo.participantIDs).length);
+			var leave = config.messages.whenUserLeave.replace("{username}", userMentions).replace("{groupname}", threadInfo.name).replace("{groupmember}", Object.keys(threadInfo.participantIDs).length);
+			var leaveDM = config.messages.whenUserLeaveDM.replace("{username}", userMentions).replace("{groupname}", threadInfo.name).replace("{groupmember}", Object.keys(threadInfo.participantIDs).length);
 			
 			if (userID !== fb.getCurrentUserID()) {
 				fb.sendMessage({
@@ -93,7 +101,13 @@ if (msg.type === 'event') {
 						id: userID
 					}],
 				}, msg.threadID);
-			    fb.sendMessage(`${data.prefix} ${leaveDM}`, userID);
+			    fb.sendMessage({
+					body: `${data.prefix} ${leaveDM}`,
+					mentions: [{
+						tag: userMentions,
+						id: userID
+					}],
+				}, userID);
 		  }
 		})
 		break;
