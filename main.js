@@ -60,8 +60,8 @@ if (msg.type === 'event') {
 			fb.getUserInfo([userID], (err, userInfo) => {
 				
 			var userMentions = `@${userInfo[userID].name}`;
-			var join = config.messages.whenUserJoin.replace("{username}", userMentions).replace("{groupname}", threadInfo.name).replace("{groupmember}", Object.keys(threadInfo.participantIDs).length);
-			var joinDM = config.messages.whenUserJoinDM.replace("{username}", userMentions).replace("{groupname}", threadInfo.name).replace("{groupmember}", Object.keys(threadInfo.participantIDs).length);
+			var join = config.messages.whenUserJoin.replace("{username}", userMentions).replace("{groupname}", threadInfo.name).replace("{membercount}", Object.keys(threadInfo.participantIDs).length);
+			var joinDM = config.messages.whenUserJoinDM.replace("{username}", userMentions).replace("{groupname}", threadInfo.name).replace("{membercount}", Object.keys(threadInfo.participantIDs).length);
 			
 			if (userID !== fb.getCurrentUserID()) {
 
@@ -90,8 +90,8 @@ if (msg.type === 'event') {
 			fb.getUserInfo([userID], (err, userInfo) => {
 
 			var userMentions = `@${userInfo[userID].name}`;
-			var leave = config.messages.whenUserLeave.replace("{username}", userMentions).replace("{groupname}", threadInfo.name).replace("{groupmember}", Object.keys(threadInfo.participantIDs).length);
-			var leaveDM = config.messages.whenUserLeaveDM.replace("{username}", userMentions).replace("{groupname}", threadInfo.name).replace("{groupmember}", Object.keys(threadInfo.participantIDs).length);
+			var leave = config.messages.whenUserLeave.replace("{username}", userMentions).replace("{groupname}", threadInfo.name).replace("{membercount}", Object.keys(threadInfo.participantIDs).length);
+			var leaveDM = config.messages.whenUserLeaveDM.replace("{username}", userMentions).replace("{groupname}", threadInfo.name).replace("{membercount}", Object.keys(threadInfo.participantIDs).length);
 			
 			if (userID !== fb.getCurrentUserID()) {
 				fb.sendMessage({
