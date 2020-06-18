@@ -18,18 +18,18 @@ function ensureExists(path, mask) {
   }
 }
 
-var rootpath = path.resolve(__dirname, "..", "CustomAlerts-files");
+var rootpath = path.resolve(__dirname, "..", "CustomAlerts-config");
 ensureExists(rootpath);
 
 var defaultConfig = {
 	"messages": {
-          "whenUserJoin": "Chào mừng {username}",
-          "whenUserLeave": "Tạm biệt {username}",
-          "whenUserJoinDM": "Chào mừng cậu đã vào nhóm '{groupname}'.\n\nCậu là người dùng thứ {membercount} của nhóm.",
-          "whenUserLeaveDM": "Tạm biệt cậu đã ra khỏi nhóm '{groupname}'.\n\nNhóm còn lại {membercount} người dùng.",
+          "whenUserJoin": "Welcome {username}",
+          "whenUserLeave": "Goodbye {username}",
+          "whenUserJoinDM": "Welcome {username}! You joined the '{groupname}'",
+          "whenUserLeaveDM": "Goodbye {username}! You leave the '{groupname}'",
 	 },
      "help": [
-		 "Leave blank the feature you want to turned off",
+		 "Leave blank the feature you want to turn off",
 		 "{username}, {groupname}, {membercount}"
 	 ]
 };
