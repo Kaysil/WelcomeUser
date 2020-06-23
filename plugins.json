@@ -4,13 +4,15 @@
   "plugin_exec": "main.js",
   "command_map": {},
   "author": "Kaysil",
-  "version": "4.0",
+  "version": "5.0",
   "node_depends": {
-    "wait-for-stuff": "*"
+    "wait-for-stuff": "*",
+    "path": "*",
+    "fs": "*"
   },
   	"dependents": [],
 	"chatHook": "chathook",
 	"chatHookType": "everything",
 	"chatHookPlatform": 1,
-  "complied_for": "0.4.0"
+  "complied_for": "0.5.0"
 }

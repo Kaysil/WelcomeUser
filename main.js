@@ -1,7 +1,11 @@
 var wait = global.nodemodule['wait-for-stuff'];
 var fs = global.nodemodule["fs"];
 var path = global.nodemodule["path"];
-var wait = global.nodemodule["wait-for-stuff"];
+
+function getFacebookAdmin() {
+	var adminArray = global.config.admins.filter(arr => arr.startsWith("FB-"))
+		return adminArray;
+}
 
 function ensureExists(path, mask) {
   if (typeof mask != 'number') {
@@ -26,12 +30,12 @@ var defaultConfig = {
           "whenUserJoin": "Welcome {username}",
           "whenUserLeave": "Goodbye {username}",
           "whenUserJoinDM": "Welcome {username}! You joined the '{groupname}'",
-          "whenUserLeaveDM": "Goodbye {username}! You leave the '{groupname}'",
-	 },
-     "help": [
-		 "Leave blank the feature you want to turn off",
-		 "{username}, {groupname}, {membercount}"
-	 ]
+		  "whenUserLeaveDM": "Goodbye {username}! You leave the '{groupname}'",
+		  "botJoinNickname": "[{botprefix}] {botname}",
+		  "botJoinMessage": "User {username} ({userid}) added me into {threadname} ({threadid})",
+		  "botLeaveMessage": "User {username} ({userid}) removed me from {threadname} ({threadid})",
+		  "linkLine": "[{userlink}, {threadlink}]"
+	 }
 };
 
 if (!fs.existsSync(path.join(rootpath, "config.json"))) {
@@ -48,6 +52,7 @@ var chathook = function(type, data) {
     var msg = data.msgdata;
 	var threadID = msg.threadID;
 	var senderID = msg.senderID;
+	var str = "";
 	
 if (msg.type === 'event') {
 	switch (msg.logMessageType) {
@@ -79,6 +84,27 @@ if (msg.type === 'event') {
 						id: userID
 					}],
 				}, userID);
+			} else {
+				setTimeout(function () {
+					str = config.messages.botJoinMessage
+					.replace("{username}", userInfo[authorID].name)
+					.replace("{threadid}", threadID)
+					.replace("{threadname}", threadInfo.name)
+					.replace("{userid}", authorID);
+					str += `\n\n`;
+					str += config.linkLine
+					.replace("{threadlink}", "https://facebook.com/messages/t/" +threadID)
+					.replace("{userlink}", "https://facebook.com/" +authorID);
+					getFacebookAdmin().forEach(n => {
+						data.facebookapi.sendMessage(str, n.slice(3));
+					});
+
+					fb.changeNickname(
+						config.botJoinNickname
+						.replace("{botprefix}", global.config.commandPrefix)
+						.replace("{botname}", global.config.botname), threadID, fb.getCurrentUserID());
+
+				}, 2000);
 			}
 		  })
 		})
@@ -108,6 +134,21 @@ if (msg.type === 'event') {
 						id: userID
 					}],
 				}, userID);
+		  } else {
+			setTimeout(function () {
+				str = config.messages.botJoinMessage
+				.replace("{username}", userInfo[authorID].name)
+				.replace("{threadid}", threadID)
+				.replace("{threadname}", threadInfo.name)
+				.replace("{userid}", authorID);
+				str += `\n\n`;
+				str += config.messages.linkLine
+				.replace("{threadlink}", "https://facebook.com/messages/t/" +threadID)
+				.replace("{userlink}", "https://facebook.com/" +authorID);
+				getFacebookAdmin().forEach(n => {
+					data.facebookapi.sendMessage(str, n.slice(3));
+				});
+			}, 2000);
 		  }
 		})
 		break;
