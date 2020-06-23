@@ -2,7 +2,20 @@
   "plugin_name": "CustomAlerts",
   "plugin_scope": "customalert",
   "plugin_exec": "main.js",
-  "command_map": {},
+  "command_map": {
+		"cas": {
+			"hargs": {
+				"vi_VN": "[tin nhắn]",
+				"en_US": "[message]"
+			},
+			"hdesc": {
+				"vi_VN": "Thay đổi tin nhắn vào/thoát",
+				"en_US": "Change the join/leave message"
+			},
+			"fscope": "cascmd",
+			"compatibly": 1
+		}
+	},
   "author": "Kaysil",
   "version": "5.0",
   "node_depends": {
