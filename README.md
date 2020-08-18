@@ -17,4 +17,4 @@
 #### Example:
 - none
 
-#### When a user join/leave the bot will message like Discord
+#### When a user join or leave the bot will send a message like Discord
