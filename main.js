@@ -2,11 +2,6 @@ var wait = global.nodemodule['wait-for-stuff'];
 var fs = global.nodemodule["fs"];
 var path = global.nodemodule["path"];
 
-function getFacebookAdmin() {
-	var adminArray = global.config.admins.filter(arr => arr.startsWith("FB-"))
-		return adminArray;
-}
-
 function ensureExists(path, mask) {
   if (typeof mask != 'number') {
     mask = 0o777;
@@ -27,13 +22,9 @@ ensureExists(rootpath);
 
 var defaultConfig = {
 	"messages": {
-          "whenUserJoin": "Welcome {username}",
-          "whenUserLeave": "Goodbye {username}",
-		  "when_bot_join_change_nick_name": "[{botprefix}] {botname}",
-		  "when_user_add_bot": "User {username} ({userid}) added me into {threadname} ({threadid})",
-		  "when_user_kick_bot": "User {username} ({userid}) removed me from {threadname} ({threadid})",
-		  "link_line": "{userlink}\n{threadlink}"
-	 }
+          "userJoin": "Welcome {username}",
+          "userLeave": "Goodbye {username}",
+	}
 };
 
 if (!fs.existsSync(path.join(rootpath, "config.json"))) {
@@ -45,106 +36,61 @@ if (!fs.existsSync(path.join(rootpath, "config.json"))) {
 	}));
 }
 
-var chathook = function(type, data) {
+var chathook = async function(type, data) {
 	var fb = data.facebookapi;
     var msg = data.msgdata;
 	var threadID = msg.threadID;
 	var senderID = msg.senderID;
 	var str = "";
 	
-if (msg.type === 'event') {
-	switch (msg.logMessageType) {
-		case 'log:subscribe':
-			msg.logMessageData.addedParticipants.forEach(user => {
-				
-			var [err, threadInfo] = wait.for.function(data.facebookapi.getThreadInfo, data.msgdata.threadID);
-			var userID = user.userFbId;
-			var authorID = msg.author;
-			
-			fb.getUserInfo([userID, authorID], (err, userInfo) => {
-				if (err) data.log(err);
-				
+	if (msg.type === 'event') {
+		switch (msg.logMessageType) {
+			case 'log:subscribe':
+				for (var user of msg.logMessageData.addedParticipants) {
+					var threadInfo = await fb.getThreadInfo(msg.threadID);
+					var userID = user.userFbId;
+					var authorID = msg.author;
+					var userInfo = await fb.getUserInfo([userID, authorID]);
+					var userMentions = `@${userInfo[userID].name}`;
+					var join = data.prefix + " " + config.messages.userJoin
+					.replace("{username}", userMentions)
+					.replace("{groupname}", threadInfo.name)
+					.replace("{membercount}", Object.keys(threadInfo.participantIDs).length);
+
+					if (userID !== fb.getCurrentUserID()) {
+						fb.sendMessage({
+							body: join,
+							mentions: [{
+								tag: userMentions,
+								id: userID
+							}],
+						}, msg.threadID);
+					}
+				};
+			break;
+			case 'log:unsubscribe':
+				var userID = msg.logMessageData.leftParticipantFbId;
+				var authorID = msg.author;
+				var threadInfo = await fb.getThreadInfo(msg.threadID);
+				var userInfo = await fb.getUserInfo([userID, authorID]);
 				var userMentions = `@${userInfo[userID].name}`;
-				var join = data.prefix + " " + config.messages.whenUserJoin
+				var leave = data.prefix + " " + config.messages.userLeave
 				.replace("{username}", userMentions)
 				.replace("{groupname}", threadInfo.name)
 				.replace("{membercount}", Object.keys(threadInfo.participantIDs).length);
 
-			if (userID !== fb.getCurrentUserID()) {
-				fb.sendMessage({
-					body: join,
-					mentions: [{
-						tag: userMentions,
-						id: userID
-					}],
-				}, msg.threadID);
-			} else {
-				setTimeout(function () {
-					str = config.messages["when_user_add_bot"]
-					.replace("{username}", userInfo[authorID].name)
-					.replace("{threadid}", threadID)
-					.replace("{threadname}", threadInfo.name)
-					.replace("{userid}", authorID);
-					str += `\n\n`;
-					str += config.messages["link_line"]
-					.replace("{threadlink}", "https://facebook.com/messages/t/" + threadID)
-					.replace("{userlink}", "https://facebook.com/" + authorID);
-					getFacebookAdmin().forEach(n => {
-						data.facebookapi.sendMessage(str, n.slice(3));
-					});
-
-					fb.changeNickname(
-						config.messages["when_bot_join_change_nick_name"]
-						.replace("{botprefix}", global.config.commandPrefix)
-						.replace("{botname}", global.config.botname), threadID, fb.getCurrentUserID()
-						);
-				}, 2000);
-			}
-		  })
-		})
-		break;
-		case 'log:unsubscribe':
-			var userID = msg.logMessageData.leftParticipantFbId;
-			var authorID = msg.author;
-			var [err, threadInfo] = wait.for.function(data.facebookapi.getThreadInfo, data.msgdata.threadID);
-			
-			fb.getUserInfo([userID, authorID], (err, userInfo) => {
-				if (err) data.log(err);
-				
-			var userMentions = `@${userInfo[userID].name}`;
-			var leave = data.prefix + " " + config.messages.whenUserLeave
-			.replace("{username}", userMentions)
-			.replace("{groupname}", threadInfo.name)
-			.replace("{membercount}", Object.keys(threadInfo.participantIDs).length);
-
-			if (userID !== fb.getCurrentUserID()) {
-				fb.sendMessage({
-					body: leave,
-					mentions: [{
-						tag: userMentions,
-						id: userID
-					}],
-				}, msg.threadID);
-		  } else {
-			setTimeout(function () {
-				str = config.messages["when_user_kick_bot"]
-				.replace("{username}", userInfo[authorID].name)
-				.replace("{threadid}", threadID)
-				.replace("{threadname}", threadInfo.name)
-				.replace("{userid}", authorID);
-				str += `\n\n`;
-				str += config.messages["link_line"]
-				.replace("{threadlink}", "https://facebook.com/messages/t/" + threadID)
-				.replace("{userlink}", "https://facebook.com/" + authorID);
-				getFacebookAdmin().forEach(n => {
-					data.facebookapi.sendMessage(str, n.slice(3));
-				});
-			}, 2000);
-		  }
-		})
-		break;
- }
-}
+				if (userID !== fb.getCurrentUserID()) {
+					fb.sendMessage({
+						body: leave,
+						mentions: [{
+							tag: userMentions,
+							id: userID
+						}],
+					}, msg.threadID);
+				}
+			break;
+		}
+	}
 }
 
 module.exports = {
